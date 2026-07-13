@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projects — Elijah Charis</title>
+<meta name="description" content="Infrastructure lab series: Terraform-deployed Azure AD domain controller, NTFS file server, Azure RBAC, Update Manager patching, WAF web app defense, Splunk SIEM, and Nessus vulnerability management.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">elijah<span class="dot">.</span>charis</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="projects.html" aria-current="page">Projects</a></li>
+      <li><a href="bio.html">Bio</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">// deployments</span>
+    <h1>Projects</h1>
+    <p>A hands-on lab series built the way production gets built: Terraform-deployed, secrets in Key Vault, nothing exposed that doesn't need to be, and every build documented as a full SOP — including the errors hit and fixed along the way. Each repo contains the code and the as-built documentation.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <article class="proj-full" id="hardened-dc">
+    <header>
+      <h3>Azure AD Domain Controller — Enterprise-Pattern Terraform Build</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>Most tutorial DC builds commit the classic anti-patterns: passwords in variables, a public IP on the most sensitive server in the environment, and click-through configuration nobody can reproduce. The goal here was the opposite — a domain controller whose entire security posture is declared in code.</p>
+        <h4>The build</h4>
+        <p>Terraform deploys the full environment: resource group, VNet with separate AD and Bastion subnets, an RBAC-enabled Key Vault, an NSG scoping RDP to a management IP and the VNet only, and a Windows Server 2022 VM with <strong>no public IP</strong> and a system-assigned managed identity. A Custom Script Extension installs AD DS and promotes a new forest. Admin access flows exclusively through Azure Bastion — browser-based RDP over TLS. Secrets never touch the codebase: they're populated out-of-band via Azure CLI into Key Vault, which the VM reads with its own identity. State lives in a remote, encrypted backend.</p>
+        <h4>What it demonstrates</h4>
+        <p>Infrastructure as code as a security practice — secrets management, identity-based auth, network isolation, and reproducibility in one build, with every deviation from the tutorial path being a deliberate hardening decision.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>Terraform</span><span>Windows Server 2022</span><span>Key Vault (RBAC)</span><span>Managed identity</span><span>Azure Bastion</span><span>NSG</span></div>
+        <h4>Key decisions</h4>
+        <ul>
+          <li>No public IP on the DC — Bastion only</li>
+          <li>System-assigned managed identity</li>
+          <li>Secrets populated out-of-band</li>
+          <li>Remote encrypted TF state</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/Azure_AD_Terraform">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+  <article class="proj-full" id="ntfs">
+    <header>
+      <h3>NTFS File Server Lab — AD, Permissions &amp; Group Policy</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>Every Windows organization faces the same core challenge: Finance data readable only by Finance, HR files invisible to Sales, IT with admin everywhere. That's a permissions architecture problem, and it's easy to get subtly wrong.</p>
+        <h4>The build</h4>
+        <p>Terraform stands up a three-VM domain environment — DC01, file server FS01, and a Windows 11 client — with VNet, NSG, and Key Vault, followed by a PowerShell configuration script that builds the domain (lab.local), department security groups, SMB shares, and layered NTFS permissions, enforced alongside Group Policy. The result is a working model of departmental data access control, from share-level down to NTFS ACLs.</p>
+        <h4>What it demonstrates</h4>
+        <p>The unglamorous core of Windows administration done properly — share vs. NTFS permission interaction, group-based access design, and GPO enforcement — deployed reproducibly instead of clicked together.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>Terraform</span><span>PowerShell</span><span>AD DS</span><span>NTFS / ACLs</span><span>SMB</span><span>Group Policy</span></div>
+        <h4>Topology</h4>
+        <ul>
+          <li>DC01 — domain controller</li>
+          <li>FS01 — file server</li>
+          <li>CLIENT01 — Win 11 workstation</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/azure-ntfs-fileserver-lab">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+  <article class="proj-full" id="rbac">
+    <header>
+      <h3>Azure RBAC — Control Plane vs. Data Plane</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>NTFS controls who can access files <em>inside</em> a VM. A different question entirely: who can manage the VM itself from Azure — start it, resize it, delete it? Conflating those two layers is one of the most common access-control mistakes in cloud environments.</p>
+        <h4>The build</h4>
+        <p>Building directly on the file server lab via Terraform data sources, this deploys three role assignments — Owner, VM Contributor, and Reader — scoped tightly to a single VM rather than the subscription or resource group. Test users were created in the tenant and validated against each role, including MFA and device-code login flows. The lab reuses the existing remote-state storage account with its own isolated state key, so the two deployments coexist without touching each other's state.</p>
+        <h4>What it demonstrates</h4>
+        <p>Least-privilege scoping in practice, the control-plane/data-plane distinction interviewers love to probe, and multi-deployment Terraform state discipline — plus real troubleshooting, including state-drift cleanup documented in the SOP.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>Terraform</span><span>Azure RBAC</span><span>Entra ID</span><span>PowerShell</span></div>
+        <h4>Key decisions</h4>
+        <ul>
+          <li>Roles scoped to one VM, not the RG</li>
+          <li>Terraform data sources across labs</li>
+          <li>Isolated state keys, shared backend</li>
+          <li>Per-role validation with test users</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/rbac-lab-terraform">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+  <article class="proj-full" id="patching">
+    <header>
+      <h3>Azure Update Manager — Patch Management &amp; Compliance</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>Manual patching doesn't scale and doesn't prove anything: no consistent maintenance windows, no enforcement, no compliance trail. The interesting problem isn't patching one machine — it's building a process where fleet size stops mattering.</p>
+        <h4>The build</h4>
+        <p>A standalone three-VM domain (DC01 plus two member servers, aumlab.local) deployed with modular Terraform, managed by Azure Update Manager for assessment and installation on defined maintenance schedules, with PowerShell handling orchestration and compliance reporting. The patching regime itself is version-controlled: schedules and scope live in code, not in someone's memory.</p>
+        <h4>What it demonstrates</h4>
+        <p>Process design over heroics — the workflow governs three VMs or three hundred identically, which is the actual measure of automation. The modular Terraform structure also shows code organization beyond a single main.tf.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>Azure Update Manager</span><span>Terraform (modular)</span><span>PowerShell</span><span>Windows Server 2022</span></div>
+        <h4>Key decisions</h4>
+        <ul>
+          <li>Declared maintenance windows</li>
+          <li>Modular Terraform layout</li>
+          <li>Compliance reporting built in</li>
+          <li>Fully standalone environment</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/azure-update-manager-lab">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+  <article class="proj-full" id="waf">
+    <header>
+      <h3>Web App Defense — Application Gateway WAF vs. Live Attacks</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>Turning on a WAF is easy. Knowing what it actually catches — and what slips through, and what it blocks that it shouldn't — requires attacking something behind it and reading the logs. Most people never do that part.</p>
+        <h4>The build</h4>
+        <p>Terraform deploys DVWA on a private VM with no public IP, reachable only through an Azure Application Gateway running WAF_v2 with the OWASP Core Rule Set. With the WAF in Detection mode, I ran SQL injection, stored XSS, command injection, and CSRF against it, then analyzed the results in KQL — including CRS anomaly scoring. A real false positive was found and tuned before switching to Prevention mode, where I confirmed which attacks were blocked and which evaded. A custom WAF rule with priority ordering and evasion hardening closed the gap.</p>
+        <h4>What it demonstrates</h4>
+        <p>Defense in depth as a lifecycle, not a checkbox: detect first, tune, then enforce. Plus offensive fluency (running the attacks), defensive fluency (writing custom rules), and log analysis in KQL — the full loop a security engineer actually works.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>App Gateway WAF_v2</span><span>OWASP CRS 3.2</span><span>Terraform</span><span>DVWA</span><span>KQL</span><span>NSG</span></div>
+        <h4>Attack coverage</h4>
+        <ul>
+          <li>SQL injection</li>
+          <li>Stored XSS</li>
+          <li>Command injection</li>
+          <li>CSRF</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/Web_App_Defense">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+  <article class="proj-full" id="splunk">
+    <header>
+      <h3>Splunk SIEM &amp; Log Analysis</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>Windows endpoints generate a constant stream of authentication events, and without a SIEM nobody can search across them, correlate activity, or spot the patterns that indicate an attack — failed logins and lockouts get noticed when a user complains, not when they start.</p>
+        <h4>The build</h4>
+        <p>A Splunk indexer on an Ubuntu VM in Azure receives Windows Event Logs from a domain server via Universal Forwarder. Network exposure is deliberate and minimal: the Splunk web UI and SSH are scoped to my IP only, and the forwarder port (9997) is open to the VNet range exclusively — never the public internet. On top of that pipeline: SPL searches, dashboards, and alerts for failed logins, lockouts, and authentication trends, worked the way a SOC analyst would.</p>
+        <h4>What it demonstrates</h4>
+        <p>The full log pipeline — collection, forwarding, indexing, searching — plus least-exposure network design and SPL skills that transfer directly to KQL and Microsoft Sentinel.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>Splunk</span><span>SPL</span><span>Universal Forwarder</span><span>Ubuntu</span><span>Windows Event Logs</span><span>Azure NSG</span></div>
+        <h4>Key decisions</h4>
+        <ul>
+          <li>Forwarder port VNet-only</li>
+          <li>Web UI / SSH scoped to my IP</li>
+          <li>Cross-platform: Linux indexer, Windows source</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/Splunk-SIEM-Log-Analysis">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+  <article class="proj-full" id="nessus">
+    <header>
+      <h3>Nessus Vulnerability Scanning — Full Lifecycle</h3>
+      <span class="chip deployed">deployed</span>
+    </header>
+    <div class="body">
+      <div>
+        <h4>The problem</h4>
+        <p>Every network contains weaknesses; the job is to discover, prioritize, remediate, and <em>verify</em> them before they're exploited. A scan report that never leads to a verified fix is just documentation of your exposure.</p>
+        <h4>The build</h4>
+        <p>Nessus Essentials deployed against a Windows Server target in the cloud, running the complete enterprise workflow: an unauthenticated baseline scan, then a credentialed scan for depth, analysis and prioritization of findings, hands-on remediation of a real CVE (CVE-2013-3900, the WinVerifyTrust signature validation weakness), and a re-scan to prove closure rather than assume it. Evidence captured and documented at every stage, including the plugin-compilation and configuration troubleshooting hit along the way.</p>
+        <h4>What it demonstrates</h4>
+        <p>The vulnerability management cycle end to end — discover → scan → analyze → prioritize → remediate → verify → document — with the discipline of proving closure by re-scan, which is the step that separates scanning from managing.</p>
+      </div>
+      <aside class="proj-aside">
+        <h4>Stack</h4>
+        <div class="tags"><span>Nessus Essentials</span><span>Windows Server</span><span>Credentialed scanning</span><span>CVSS</span></div>
+        <h4>Lifecycle stages</h4>
+        <ul>
+          <li>Unauthenticated + credentialed scans</li>
+          <li>CVE-2013-3900 remediated</li>
+          <li>Re-scan verification</li>
+          <li>Evidence-based reporting</li>
+        </ul>
+        <h4>Source</h4>
+        <a class="repo" href="https://github.com/ejk52515/Nessus-vulnerability-scanning-lab">View repo →</a>
+      </aside>
+    </div>
+  </article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Elijah Charis · Built by hand, deployed from a repo.</span>
+    <span><a href="index.html">← Home</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

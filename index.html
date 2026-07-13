@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elijah Charis — Systems Administrator &amp; Cloud Engineer</title>
+<meta name="description" content="Windows Systems Administrator in Austin, TX building hardened, automated Azure infrastructure. Active Directory, Terraform, PowerShell, M365.">
+<!-- ================================================================
+     REMAINING TODOs (search all 3 html files for "TODO"):
+     1. GitHub profile + repo URLs
+     2. LinkedIn URL
+     3. resume.pdf — drop the file in the repo root
+     ================================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">elijah<span class="dot">.</span>charis</a>
+    <ul class="nav-links">
+      <li><a href="index.html" aria-current="page">Home</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="bio.html">Bio</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Systems Administrator → Cloud Engineer</span>
+      <h1>Infrastructure that is <em>documented</em>, <em>automated</em>, and <em>hardened by default</em>.</h1>
+      <p class="lede">I'm Elijah Charis — a Windows Systems Administrator running identity, directory, and Azure infrastructure for 400+ users. I automate the repetitive, harden the exposed, and write down how it all works.</p>
+      <div class="btn-row">
+        <!-- TODO: drop resume.pdf into the repo root -->
+        <a class="btn btn-primary" href="resume.pdf">Download resume</a>
+        <a class="btn btn-ghost" href="projects.html">View projects</a>
+      </div>
+    </div>
+
+    <!-- Signature element: career as a Terraform resource block -->
+    <div class="code-card" role="img" aria-label="Terraform-style code block describing Elijah: role Windows Systems Administrator, located in Austin Texas, focus on Azure, identity, and automation, CIS-aligned hardening, currently pursuing AZ-104. Plan: one to add.">
+<span class="kw">resource</span> <span class="str">"engineer"</span> <span class="str">"elijah"</span> {<br>
+&nbsp;&nbsp;<span class="attr">role</span>      = <span class="str">"Windows Systems Administrator"</span><br>
+&nbsp;&nbsp;<span class="attr">location</span>  = <span class="str">"Austin, TX"</span><br>
+&nbsp;&nbsp;<span class="attr">focus</span>     = [<span class="str">"azure"</span>, <span class="str">"identity"</span>, <span class="str">"automation"</span>]<br>
+&nbsp;&nbsp;<span class="attr">hardening</span> = <span class="str">"cis_aligned"</span><br>
+&nbsp;&nbsp;<span class="attr">state</span>     = <span class="str">"remote, encrypted"</span><br>
+&nbsp;&nbsp;<span class="attr">pursuing</span>  = <span class="str">"AZ-104"</span><br>
+}<br>
+<span class="plan">Plan: 1 to add, 0 to change, 0 to destroy.<span class="cursor"></span></span>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="about-teaser">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-label">// about</span>
+      <h2>Operations first. Automation always.</h2>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p>I run the day-to-day backbone of enterprise IT — <strong>Active Directory for 400+ users, Group Policy across 300+ workstations, DNS/DHCP, M365, and hybrid Entra ID</strong> — and treat every manual task as a candidate for automation. My recent work centers on Azure: a Windows Server domain controller deployed and promoted entirely through Terraform, with Key Vault, managed identities, and RBAC eliminating hardcoded credentials.</p>
+        <p>Before IT, I was an <strong>investment analyst at Cambridge Associates</strong> supporting $1B+ in assets — which means I'm at home in regulated, audit-heavy environments and understand why change control and least privilege exist.</p>
+        <p><a href="bio.html">Read the full story →</a></p>
+      </div>
+      <ul class="fact-list">
+        <li><span class="k">Current role</span><span class="v">Windows Systems Administrator</span></li>
+        <li><span class="k">Location</span><span class="v">Austin, TX</span></li>
+        <li><span class="k">Specialty</span><span class="v">Identity &amp; Azure infrastructure</span></li>
+        <li><span class="k">Background</span><span class="v">Finance → IT career pivot</span></li>
+        <li><span class="k">Now studying</span><span class="v">AZ-104 (Azure Administrator)</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="featured">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-label">// featured deployments</span>
+      <h2>Selected projects</h2>
+    </div>
+    <div class="proj-grid">
+
+      <article class="card">
+        <span class="chip deployed">deployed</span>
+        <h3>Azure AD Domain Controller via Terraform</h3>
+        <p>An enterprise-pattern DC build: no public IP, Bastion-only access, secrets in Key Vault read by managed identity, remote encrypted state — every tutorial anti-pattern deliberately broken.</p>
+        <div class="tags"><span>Terraform</span><span>Key Vault</span><span>Bastion</span><span>Windows Server 2022</span></div>
+        <a class="repo" href="projects.html#hardened-dc">Full writeup →</a>
+      </article>
+
+      <article class="card">
+        <span class="chip deployed">deployed</span>
+        <h3>Web App Defense with Application Gateway WAF</h3>
+        <p>SQL injection, XSS, command injection, and CSRF run against a WAF-protected app — detection, false-positive tuning, prevention, and a custom rule, with KQL log analysis throughout.</p>
+        <div class="tags"><span>WAF_v2</span><span>OWASP CRS</span><span>KQL</span><span>Terraform</span></div>
+        <a class="repo" href="projects.html#waf">Full writeup →</a>
+      </article>
+
+      <article class="card">
+        <span class="chip deployed">deployed</span>
+        <h3>Splunk SIEM &amp; Log Analysis</h3>
+        <p>A full log pipeline — Windows events forwarded to a Splunk indexer on Linux — with SPL searches, dashboards, and alerts for failed logins and lockouts, and least-exposure network design.</p>
+        <div class="tags"><span>Splunk</span><span>SPL</span><span>Universal Forwarder</span><span>Detection</span></div>
+        <a class="repo" href="projects.html#splunk">Full writeup →</a>
+      </article>
+
+      <article class="card">
+        <span class="chip deployed">deployed</span>
+        <h3>Nessus Vulnerability Scanning — Full Lifecycle</h3>
+        <p>Unauthenticated and credentialed scans, a real CVE remediated (CVE-2013-3900), and closure proven by re-scan — the complete discover-to-verify vulnerability management cycle.</p>
+        <div class="tags"><span>Nessus</span><span>Credentialed scans</span><span>CVSS</span><span>Remediation</span></div>
+        <a class="repo" href="projects.html#nessus">Full writeup →</a>
+      </article>
+
+    </div>
+    <p style="margin-top:28px"><a class="btn btn-ghost" href="projects.html">All projects →</a></p>
+  </div>
+</section>
+
+<section id="certs">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-label">// pipeline</span>
+      <h2>Certification roadmap</h2>
+    </div>
+    <ol class="pipe">
+      <li>
+        <span class="n">01</span>
+        <span class="name">CompTIA Security+<span class="sub">Security fundamentals, controls, and risk</span></span>
+        <span class="chip deployed">earned</span>
+      </li>
+      <li>
+        <span class="n">02</span>
+        <span class="name">AZ-104 — Azure Administrator<span class="sub">Compute, networking, storage, identity</span></span>
+        <span class="chip active">in progress</span>
+      </li>
+      <li>
+        <span class="n">03</span>
+        <span class="name">AWS Solutions Architect – Associate<span class="sub">Multi-cloud architecture fundamentals</span></span>
+        <span class="chip planned">planned</span>
+      </li>
+      <li>
+        <span class="n">04</span>
+        <span class="name">RHCSA — Red Hat Certified System Administrator<span class="sub">Linux administration fundamentals</span></span>
+        <span class="chip planned">planned</span>
+      </li>
+      <li>
+        <span class="n">05</span>
+        <span class="name">RHCE — Red Hat Certified Engineer<span class="sub">Ansible automation at scale</span></span>
+        <span class="chip planned">planned</span>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="contact">
+      <span class="sec-label">// contact</span>
+      <h2>Let's talk infrastructure.</h2>
+      <p>Austin-based and open to systems administrator and cloud administrator roles — especially in environments where security and documentation are taken seriously. Regulated industries welcome; I speak both finance and IT.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="mailto:elijah.a.korkoyah@gmail.com">Email me</a>
+        <a class="btn btn-ghost" href="https://www.linkedin.com/in/elijah-charis/" rel="noopener">LinkedIn</a>
+        <!-- TODO: replace with your GitHub URL -->
+        <a class="btn btn-ghost" href="https://github.com/ejk52515" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Elijah Charis · Built by hand, deployed from a repo.</span>
+    <span><a href="#top">Back to top</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
